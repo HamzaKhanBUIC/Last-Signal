@@ -1,0 +1,24 @@
+# Logs & Temporary Files
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.system_generated/
+*.log
+
+# OS Metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE & Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build & Cache
+dist/
+build/
+.cache/
