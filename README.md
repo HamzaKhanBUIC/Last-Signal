@@ -4,6 +4,11 @@
 
 > **"In the cold depths of Sector 42, silence isn't empty. It's waiting."**
 
+[![Play Online](https://img.shields.io/badge/PLAY_ONLINE-LIVE_ON_GITHUB_PAGES-00ff66?style=for-the-badge&logo=github)](https://hamzakhanbuic.github.io/Last-Signal/)
+[![Tests](https://img.shields.io/badge/TESTS-149%2F149_PASSING-00f0ff?style=for-the-badge)](https://github.com/HamzaKhanBUIC/Last-Signal/actions)
+
+🎮 **LIVE PLAYABLE URL:** [https://hamzakhanbuic.github.io/Last-Signal/](https://hamzakhanbuic.github.io/Last-Signal/)
+
 **THE LAST SIGNAL** is a 2D top-down sci-fi survival horror exploration game built with modern pure vanilla JavaScript (ES Modules), HTML5 Canvas 2D, and 100% procedural Web Audio API sound synthesis.
 
 ---
