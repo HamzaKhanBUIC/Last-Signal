@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>THE LAST SIGNAL — 2D Sci-Fi Survival Horror</title>
+  <meta name="description" content="An atmospheric 2D top-down sci-fi survival horror game featuring raycast dynamic lighting, procedural audio synthesis, and rogue AI evasion.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📡</text></svg>">
+</head>
+<body>
+  <div id="game-wrapper">
+    <!-- Main CRT Bezel Frame -->
+    <div class="crt-bezel">
+      <!-- Master Game Canvas (1280x720 internal resolution) -->
+      <canvas id="game-canvas" width="1280" height="720"></canvas>
+
+      <!-- Retro CRT Scanline & Curved Vignette Overlay -->
+      <div id="crt-overlay" class="crt-overlay crt-flicker"></div>
+    </div>
+
+    <!-- Mobile / Tablet On-Screen Touch Controls Overlay -->
+    <div id="touch-controls">
+      <!-- Virtual Analog Joystick (Movement) -->
+      <div id="touch-joystick" class="touch-joystick-zone">
+        <div id="touch-joystick-stick" class="touch-joystick-stick"></div>
+      </div>
+
+      <!-- Quick Inventory Slots (Top Center) -->
+      <div class="touch-quick-slots">
+        <button id="btn-medkit" class="touch-slot-btn" title="Use Medkit">[1] MEDKIT</button>
+        <button id="btn-battery" class="touch-slot-btn" title="Use Battery">[2] BATTERY</button>
+        <button id="btn-decoy" class="touch-slot-btn" title="Use Decoy">[3] DECOY</button>
+        <button id="btn-emp" class="touch-slot-btn" title="Use EMP">[4] EMP</button>
+        <button id="btn-map" class="touch-slot-btn" title="Toggle Map">[M] MAP</button>
+        <button id="btn-pause" class="touch-slot-btn" title="Pause Game">[ESC] PAUSE</button>
+      </div>
+
+      <!-- Action Buttons Pad (Bottom Right) -->
+      <div class="touch-action-pad">
+        <button id="btn-interact" class="touch-btn btn-interact" title="Interact / Terminal">[E]<br>INTERACT</button>
+        <button id="btn-flashlight" class="touch-btn" title="Toggle Flashlight">[F]<br>LIGHT</button>
+        <button id="btn-sprint" class="touch-btn btn-sprint" title="Sprint">[SHIFT]<br>SPRINT</button>
+        <button id="btn-sneak" class="touch-btn" title="Crouch / Stealth">[C]<br>SNEAK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main ES Module Game Bootstrap -->
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
