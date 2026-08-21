@@ -18,6 +18,10 @@ import { ThreatSystem } from './ThreatSystem.js';
 import { EventDirector } from './EventDirector.js';
 import { CCTVUI } from '../ui/CCTVUI.js';
 import { AudioLogSystem } from '../audio/AudioLogSystem.js';
+import { SurvivalSystem } from './SurvivalSystem.js';
+import { CraftingSystem } from './CraftingSystem.js';
+import { CraftingUI } from '../ui/CraftingUI.js';
+import { ThreeRenderer } from '../rendering/ThreeRenderer.js';
 
 export class Engine {
   /**
@@ -43,6 +47,12 @@ export class Engine {
     this.eventDirector = new EventDirector(this.eventBus, this.gameState);
     this.cctvUI = new CCTVUI(this.eventBus, this.gameState);
     this.audioLogs = new AudioLogSystem(this.eventBus, this.audio);
+
+    // CDDA-Inspired Deep Survival & Crafting Systems
+    this.survival = new SurvivalSystem(this.eventBus);
+    this.crafting = new CraftingSystem(this.eventBus);
+    this.craftingUI = new CraftingUI(this.eventBus, this.crafting);
+    this.threeRenderer = new ThreeRenderer(this.canvas);
 
     // Rendering & Entities (wired on initialization)
     this.renderer = null;
@@ -455,6 +465,14 @@ export class Engine {
 
     // 5. Update Audio Log System
     this.audioLogs?.update(fixedDt);
+
+    // 6. Update CDDA Survival & Physiology Simulation
+    if (this.player && this.survival) {
+      const sectorInfo = this.level?.getSectorAt(this.player.x, this.player.y);
+      this.survival.update(fixedDt, sectorInfo, this.gameState, this.particles, this.player);
+      this.gameState.survivalReport = this.survival.getReport();
+      this.player.speedMultiplier = this.survival.getMovementMultiplier();
+    }
   }
 
   /**
@@ -518,8 +536,10 @@ export class Engine {
       this.hud?.render(this.ctx, this.gameState, this.player, this.enemy, this.currentSector);
     }
 
-    // 9. Modal UI (Terminal, Minigame, Pause, GameOver, Victory)
-    if (this.gameState.state === GAME_STATES.TERMINAL) {
+    // 9. Modal UI (Terminal, Minigame, Pause, GameOver, Victory, Crafting)
+    if (this.craftingUI?.isOpen) {
+      this.craftingUI.render(this.ctx, this.gameState);
+    } else if (this.gameState.state === GAME_STATES.TERMINAL) {
       this.terminalUI?.render(this.ctx, CANVAS_WIDTH, CANVAS_HEIGHT);
     } else if (this.gameState.state === GAME_STATES.PAUSED) {
       this.menuManager?.renderPause(this.ctx, CANVAS_WIDTH, CANVAS_HEIGHT);

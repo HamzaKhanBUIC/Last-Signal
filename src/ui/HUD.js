@@ -927,10 +927,80 @@ export class HUD {
       ctx.fillText('DR. VANCE [YOU]', px + 12, py + 4);
     }
 
+    // 4. CDDA-Inspired Anatomical Body Doll & Trauma Readout (Right Panel)
+    const dollX = mx + 540;
+    const dollY = my + 60;
+    const dollW = 190;
+    const dollH = 410;
+
+    ctx.fillStyle = 'rgba(4, 10, 18, 0.9)';
+    ctx.fillRect(dollX, dollY, dollW, dollH);
+    ctx.strokeStyle = COLORS.CYAN_BRIGHT;
+    ctx.lineWidth = 1.2;
+    ctx.strokeRect(dollX, dollY, dollW, dollH);
+    this.drawCornerBrackets(ctx, dollX, dollY, dollW, dollH, COLORS.CYAN_BRIGHT, 6);
+
+    ctx.fillStyle = COLORS.CYAN_BRIGHT;
+    ctx.font = 'bold 11px "Share Tech Mono", monospace';
+    ctx.fillText('🩻 BIOMETRIC TRAUMA DOLL', dollX + 12, dollY + 22);
+
+    const limbs = (gameState && gameState.survivalReport && gameState.survivalReport.limbs) || {
+      head: 100, torso: 100, leftArm: 100, rightArm: 100, leftLeg: 100, rightLeg: 100
+    };
+
+    const drawLimbBar = (label, hp, ly) => {
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '10px "Share Tech Mono", monospace';
+      ctx.fillText(label, dollX + 12, ly);
+
+      const barX = dollX + 65;
+      const barW = 110;
+      const barH = 8;
+      ctx.fillStyle = 'rgba(20, 30, 45, 0.8)';
+      ctx.fillRect(barX, ly - 8, barW, barH);
+
+      const color = hp > 60 ? COLORS.CRT_GREEN_BRIGHT : (hp > 25 ? COLORS.AMBER_BRIGHT : COLORS.ALERT_RED_BRIGHT);
+      ctx.fillStyle = color;
+      ctx.fillRect(barX, ly - 8, (hp / 100) * barW, barH);
+      ctx.strokeStyle = 'rgba(100, 180, 255, 0.3)';
+      ctx.strokeRect(barX, ly - 8, barW, barH);
+    };
+
+    drawLimbBar('HEAD', limbs.head || 100, dollY + 48);
+    drawLimbBar('TORSO', limbs.torso || 100, dollY + 72);
+    drawLimbBar('L.ARM', limbs.leftArm || 100, dollY + 96);
+    drawLimbBar('R.ARM', limbs.rightArm || 100, dollY + 120);
+    drawLimbBar('L.LEG', limbs.leftLeg || 100, dollY + 144);
+    drawLimbBar('R.LEG', limbs.rightLeg || 100, dollY + 168);
+
+    // Physiological Metrics
+    const rep = (gameState && gameState.survivalReport) || {
+      suitIntegrity: 100, bodyTemperature: 37.0, bleedingRate: 0, pain: 0
+    };
+
+    ctx.fillStyle = COLORS.CYAN_BRIGHT;
+    ctx.font = 'bold 10px "Share Tech Mono", monospace';
+    ctx.fillText('PHYSIOLOGY STATUS:', dollX + 12, dollY + 205);
+
+    ctx.fillStyle = rep.suitIntegrity > 50 ? '#ffffff' : COLORS.ALERT_RED_BRIGHT;
+    ctx.font = '10px "Share Tech Mono", monospace';
+    ctx.fillText(`• SUIT PRESSURE: ${rep.suitIntegrity}%`, dollX + 12, dollY + 228);
+
+    const tempColor = rep.bodyTemperature < 35.0 ? COLORS.CYAN_BRIGHT : '#ffffff';
+    ctx.fillStyle = tempColor;
+    ctx.fillText(`• CORE TEMP: ${rep.bodyTemperature}°C ${rep.bodyTemperature < 35.0 ? '[HYPO]' : ''}`, dollX + 12, dollY + 250);
+
+    const bleedColor = rep.bleedingRate > 0 ? COLORS.ALERT_RED_BRIGHT : COLORS.CRT_GREEN_BRIGHT;
+    ctx.fillStyle = bleedColor;
+    ctx.fillText(`• HEMORRHAGE: ${rep.bleedingRate > 0 ? `${rep.bleedingRate} HP/s` : 'SEALED'}`, dollX + 12, dollY + 272);
+
+    ctx.fillStyle = rep.pain > 30 ? COLORS.AMBER_BRIGHT : '#94a3b8';
+    ctx.fillText(`• PAIN INDEX: ${rep.pain}%`, dollX + 12, dollY + 294);
+
     // Legend & Controls at footer
     ctx.font = '11px "Share Tech Mono", monospace, monospace';
     ctx.fillStyle = COLORS.CYAN;
-    ctx.fillText('KEYS: [1] Medkit  [2] Battery  [3] Sonic Decoy  [4] EMP Burst  [E] Action  [F] Light  [C] Sneak', mx + 24, my + mapH - 18);
+    ctx.fillText('KEYS: [1] Medkit  [2] Battery  [3] Decoy  [4] EMP  [C] Craft  [E] Action  [F] Light', mx + 24, my + mapH - 18);
   }
 
   // =========================================================================
