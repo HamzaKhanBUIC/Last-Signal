@@ -5,26 +5,41 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const PORT = 8000;
+const PORT = process.env.PORT || 3000;
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.mjs': 'application/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.json': 'application/json',
+  '.json': 'application/json; charset=utf-8',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.svg': 'image/svg+xml',
   '.ico': 'image/x-icon',
-  '.svg': 'image/svg+xml'
+  '.wav': 'audio/wav',
+  '.mp3': 'audio/mpeg'
 };
 
 const server = http.createServer((req, res) => {
-  let reqPath = req.url.split('?')[0];
-  if (reqPath === '/') reqPath = '/index.html';
+  // CORS Headers
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
 
-  const filePath = path.join(__dirname, reqPath);
-  const ext = path.extname(filePath).toLowerCase();
-  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204);
+    res.end();
+    return;
+  }
+
+  let reqPath = req.url.split('?')[0];
+  if (reqPath === '/' || reqPath === '') {
+    reqPath = '/index.html';
+  }
+
+  const safePath = path.normalize(reqPath).replace(/^(\.\.[\/\\])+/, '');
+  const filePath = path.join(__dirname, safePath);
 
   fs.readFile(filePath, (err, content) => {
     if (err) {
@@ -36,16 +51,17 @@ const server = http.createServer((req, res) => {
         res.end(`Server Error: ${err.code}`);
       }
     } else {
-      res.writeHead(200, {
-        'Content-Type': contentType,
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Access-Control-Allow-Origin': '*'
-      });
+      const ext = path.extname(filePath).toLowerCase();
+      const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+      res.writeHead(200, { 'Content-Type': contentType });
       res.end(content);
     }
   });
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-  console.log(`[HTTP] Game Server running at http://localhost:${PORT}/`);
+server.listen(PORT, () => {
+  console.log(`\n==================================================`);
+  console.log(`  THE LAST SIGNAL — LOCAL SERVER LIVE!             `);
+  console.log(`  URL: http://localhost:${PORT}                   `);
+  console.log(`==================================================\n`);
 });
