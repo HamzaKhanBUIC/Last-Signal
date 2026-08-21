@@ -18,6 +18,7 @@ import { runTacticalGameplayTests } from './tactical-gameplay.test.js';
 import { runV2SystemsTests } from './v2-systems.test.js';
 import { runAIPredatorPassTests } from './ai-predator-pass.test.js';
 import { runAudioLogAndVibrationTests } from './audiolog-and-vibration.test.js';
+import { runThreeRendererTests } from './three-renderer.test.js';
 
 let totalPassed = 0;
 let totalFailed = 0;
@@ -134,6 +135,7 @@ try {
   runV2SystemsTests(describe, test, expect);
   runAIPredatorPassTests(describe, test, expect);
   runAudioLogAndVibrationTests(describe, test, expect);
+  runThreeRendererTests(describe, test, expect);
 
   console.log(`\n\x1b[35m====================================================\x1b[0m`);
   console.log(`  Passed: \x1b[32m${totalPassed + 17}\x1b[0m | Failed: \x1b[31m${totalFailed}\x1b[0m | All Test Suites OK!`);
