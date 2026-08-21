@@ -41,16 +41,25 @@ export class HUD {
     this.cachedStamina = STAMINA_MAX;
     this.cachedBattery = BATTERY_MAX;
 
-    // Tactical Map Overlay State
-    this.isMapOpen = false;
+    // Active Audio Log Playback State
+    this.activeAudioLog = null;
+    this.audioLogTimer = 0;
 
-    // Toast listener
+    // Toast & Event listeners
     if (this.eventBus) {
       this.eventBus.on('TOAST_NOTIFICATION', (data) => {
         this.showToast(data.message, data.type || 'info', data.duration || 3.5);
       });
       this.eventBus.on('MAP_TOGGLED', () => {
         this.isMapOpen = !this.isMapOpen;
+      });
+      this.eventBus.on('AUDIO_LOG_STARTED', (data) => {
+        this.activeAudioLog = data.log;
+        this.audioLogTimer = data.duration || 6.5;
+      });
+      this.eventBus.on('AUDIO_LOG_FINISHED', () => {
+        this.activeAudioLog = null;
+        this.audioLogTimer = 0;
       });
     }
   }
@@ -119,6 +128,14 @@ export class HUD {
       }
     }
 
+    // Audio log timer countdown
+    if (this.audioLogTimer > 0) {
+      this.audioLogTimer -= dt;
+      if (this.audioLogTimer <= 0) {
+        this.activeAudioLog = null;
+      }
+    }
+
     // Update toasts
     for (let i = this.toasts.length - 1; i >= 0; i--) {
       const toast = this.toasts[i];
@@ -169,12 +186,66 @@ export class HUD {
     // 6. Floating Notification Toasts
     this.renderToasts(ctx);
 
-    // 7. Tactical PDA Station Map Overlay
+    // 7. Diegetic Audio Log Subtitle Banner
+    if (this.activeAudioLog) {
+      this.renderAudioLogSubtitle(ctx, this.activeAudioLog);
+    }
+
+    // 8. Tactical PDA Station Map Overlay
     if (this.isMapOpen) {
       this.renderStationMap(ctx, gameState, player, currentSector);
     }
 
     ctx.restore();
+  }
+
+  /**
+   * Renders the animated retro sci-fi Audio Log Subtitle Bar
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {Object} log
+   */
+  renderAudioLogSubtitle(ctx, log) {
+    const w = 680;
+    const h = 64;
+    const x = (CANVAS_WIDTH - w) / 2;
+    const y = 20;
+
+    // Outer Bezel Frame
+    ctx.fillStyle = 'rgba(4, 10, 18, 0.92)';
+    ctx.fillRect(x, y, w, h);
+
+    ctx.strokeStyle = COLORS.CYAN_BRIGHT;
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(x, y, w, h);
+    this.drawCornerBrackets(ctx, x, y, w, h, COLORS.CYAN_BRIGHT, 8);
+
+    // Left Icon & Animated Radio Waveform Equalizer
+    ctx.fillStyle = COLORS.AMBER_BRIGHT;
+    ctx.font = 'bold 12px "Share Tech Mono", monospace';
+    ctx.fillText('📻 AUDIO LOG', x + 16, y + 20);
+
+    for (let i = 0; i < 5; i++) {
+      const barH = 4 + Math.abs(Math.sin(this.animTime * 8 + i * 1.2)) * 12;
+      ctx.fillStyle = COLORS.CRT_GREEN_BRIGHT;
+      ctx.fillRect(x + 100 + i * 5, y + 20 - barH, 3, barH);
+    }
+
+    // Author & Sector Tag
+    ctx.fillStyle = COLORS.CYAN;
+    ctx.font = '11px "Share Tech Mono", monospace';
+    ctx.fillText(`// ${log.author.toUpperCase()} (${log.role || 'Personnel'}) — ${log.sector.toUpperCase()}`, x + 135, y + 20);
+
+    // Transcript Subtitle (with text wrapping)
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'italic 12px "Share Tech Mono", monospace';
+    
+    // Quick single-line truncate / wrap
+    const text = `"${log.transcript}"`;
+    if (text.length > 85) {
+      ctx.fillText(text.substring(0, 82) + '...', x + 16, y + 46);
+    } else {
+      ctx.fillText(text, x + 16, y + 46);
+    }
   }
 
   // =========================================================================

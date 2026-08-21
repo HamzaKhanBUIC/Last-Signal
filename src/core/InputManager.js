@@ -327,6 +327,31 @@ export class InputManager {
   }
 
   /**
+   * Triggers dual-rumble haptic vibration on active gamepad if supported.
+   * @param {number} [strongMagnitude=0.5] Low-frequency heavy rumble (0.0 to 1.0)
+   * @param {number} [weakMagnitude=0.5] High-frequency light rumble (0.0 to 1.0)
+   * @param {number} [duration=200] Duration in milliseconds
+   */
+  vibrateGamepad(strongMagnitude = 0.5, weakMagnitude = 0.5, duration = 200) {
+    if (typeof navigator === 'undefined' || !navigator.getGamepads) return;
+
+    try {
+      const gamepads = navigator.getGamepads();
+      for (let i = 0; i < gamepads.length; i++) {
+        const pad = gamepads[i];
+        if (pad && pad.connected && pad.vibrationActuator) {
+          pad.vibrationActuator.playEffect('dual-rumble', {
+            startDelay: 0,
+            duration: duration,
+            weakMagnitude: Math.max(0, Math.min(1, weakMagnitude)),
+            strongMagnitude: Math.max(0, Math.min(1, strongMagnitude))
+          }).catch(() => {});
+        }
+      }
+    } catch (_) {}
+  }
+
+  /**
    * Checks if an action is currently active (keyboard, mouse, touch, or gamepad).
    * @param {string} action Member of INPUT_ACTIONS
    * @returns {boolean}

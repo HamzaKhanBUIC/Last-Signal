@@ -17,6 +17,7 @@ import { StationPASystem } from '../audio/StationPASystem.js';
 import { ThreatSystem } from './ThreatSystem.js';
 import { EventDirector } from './EventDirector.js';
 import { CCTVUI } from '../ui/CCTVUI.js';
+import { AudioLogSystem } from '../audio/AudioLogSystem.js';
 
 export class Engine {
   /**
@@ -41,6 +42,7 @@ export class Engine {
     this.threatSystem = new ThreatSystem(this.eventBus, this.gameState, this.paSystem);
     this.eventDirector = new EventDirector(this.eventBus, this.gameState);
     this.cctvUI = new CCTVUI(this.eventBus, this.gameState);
+    this.audioLogs = new AudioLogSystem(this.eventBus, this.audio);
 
     // Rendering & Entities (wired on initialization)
     this.renderer = null;
@@ -199,6 +201,7 @@ export class Engine {
     this.eventBus.on('PLAYER_DAMAGED', (data) => {
       this.audio.playPlayerHit(data.amount, this.player);
       this.camera.shake(1.2, 0.4);
+      this.input.vibrateGamepad(0.8, 0.4, 300);
       if (this.particles) {
         this.particles.emitBloodSpatter?.(this.player.x, this.player.y, data.angle || 0);
       }
@@ -449,6 +452,9 @@ export class Engine {
       this.entityDistance = dist;
       this.eventBus.emit('ENTITY_PROXIMITY', { distance: dist, entity: this.enemy });
     }
+
+    // 5. Update Audio Log System
+    this.audioLogs?.update(fixedDt);
   }
 
   /**

@@ -1755,4 +1755,51 @@ export class SoundEngine {
     osc.start(t);
     osc.stop(t + 1.7);
   }
+
+  /**
+   * Plays a vintage audio log playback stinger with radio cassette click,
+   * magnetic tape hiss, and synthesized speech formant cadence.
+   */
+  playAudioLogStinger() {
+    this.synth.init();
+    if (!this.synth.ctx) return;
+
+    const ctx = this.synth.ctx;
+    const now = ctx.currentTime;
+
+    // 1. Mechanical cassette deck latch click
+    const clickOsc = ctx.createOscillator();
+    const clickGain = ctx.createGain();
+    clickOsc.type = 'triangle';
+    clickOsc.frequency.setValueAtTime(800, now);
+    clickOsc.frequency.exponentialRampToValueAtTime(120, now + 0.05);
+
+    clickGain.gain.setValueAtTime(0.35, now);
+    clickGain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+
+    clickOsc.connect(clickGain);
+    clickGain.connect(this.synth.sfxGain);
+    clickOsc.start(now);
+    clickOsc.stop(now + 0.06);
+
+    // 2. Radio static tape hiss burst
+    const hiss = this.synth.createNoiseBuffer('pink', 0.3);
+    if (hiss) {
+      const hissSource = ctx.createBufferSource();
+      hissSource.buffer = hiss;
+      const hissGain = ctx.createGain();
+      hissGain.gain.setValueAtTime(0.15, now + 0.04);
+      hissGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+      const hissFilter = ctx.createBiquadFilter();
+      hissFilter.type = 'bandpass';
+      hissFilter.frequency.setValueAtTime(2200, now);
+      hissFilter.Q.setValueAtTime(3.0, now);
+
+      hissSource.connect(hissFilter);
+      hissFilter.connect(hissGain);
+      hissGain.connect(this.synth.sfxGain);
+      hissSource.start(now + 0.04);
+    }
+  }
 }

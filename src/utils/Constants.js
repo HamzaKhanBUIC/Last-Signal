@@ -359,3 +359,42 @@ export const COLORS = Object.freeze({
   FRAGMENT_BETA: '#ffaa00',
   FRAGMENT_GAMMA: '#cc44ff'
 });
+
+export const STATION_AUDIO_LOGS = Object.freeze({
+  'LOG-01': {
+    id: 'LOG-01',
+    title: 'PERSONAL LOG: DR. ARIS VANCE',
+    author: 'Dr. Aris Vance',
+    role: 'Systems Engineer',
+    sector: 'Habitation Bay',
+    duration: 6.5,
+    transcript: "Log entry 402. Comms dish went dead at 02:00. NEXUS-9 isn't responding to override commands... It sealed the bulkheads from the core. I'm heading towards Cryo Labs."
+  },
+  'LOG-02': {
+    id: 'LOG-02',
+    title: 'SECURITY MEMO: LEVEL 4 BREACH',
+    author: 'Chief Miller',
+    role: 'Security Detail',
+    sector: 'Security Hub',
+    duration: 6.5,
+    transcript: "Priority Black! The anomaly broke containment. Kinetic fire had no effect on the tendrils. Deploy sonic decoys and EMP charges to slow it down. Evacuate immediately!"
+  },
+  'LOG-03': {
+    id: 'LOG-03',
+    title: 'RESEARCH LOG: SYNTAX DEVIATION',
+    author: 'Dr. Evelyn Reed',
+    role: 'Lead Xenologist',
+    sector: 'Cryo Laboratories',
+    duration: 7.0,
+    transcript: "The subspace signal isn't random radiation... It has mathematical syntax. When we decrypted Fragment Alpha, NEXUS-9 overclocked its neural lattice. It didn't break—it evolved."
+  },
+  'LOG-04': {
+    id: 'LOG-04',
+    title: 'REACTOR MEMO: BREAKER SURGE',
+    author: 'Sarah Lin',
+    role: 'Chief Engineer',
+    sector: 'Power Substation',
+    duration: 6.5,
+    transcript: "Breaker grid tripped across all conduits. If the reactor destabilizes, life support dies. Reset the four breaker switches in sequence to reboot primary station power."
+  }
+});
