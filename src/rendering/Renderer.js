@@ -120,11 +120,27 @@ export class Renderer {
     const minTileY = Math.max(0, Math.floor(bounds.top / ts));
     const maxTileY = Math.min(level.height - 1, Math.floor(bounds.bottom / ts));
 
-    // 1. Render Tilemap Grid
+    // 1. Render Tilemap Grid with Sector Variants
     for (let ty = minTileY; ty <= maxTileY; ty++) {
       for (let tx = minTileX; tx <= maxTileX; tx++) {
         const tileType = level.getTile(tx, ty);
-        const tileSprite = this.sprites.getTile(tileType);
+        let tileSprite = this.sprites.getTile(tileType);
+
+        // High-level sector floor variations
+        if (tileType === TILE_TYPES.FLOOR && typeof level.getSectorAt === 'function') {
+          const sector = level.getSectorAt(tx * ts + 16, ty * ts + 16);
+          if (sector) {
+            if (sector.id === 'sector-3-cryo' || sector.number === 3) {
+              tileSprite = this.sprites.get('tile_cryo_floor') || tileSprite;
+            } else if (sector.id === 'sector-6-server' || sector.number === 6) {
+              tileSprite = this.sprites.get('tile_server_floor') || tileSprite;
+            } else if (sector.id === 'sector-5-power' || sector.number === 5) {
+              tileSprite = this.sprites.get('tile_power_floor') || tileSprite;
+            } else if (sector.id === 'sector-4-hydro' || sector.number === 4) {
+              tileSprite = this.sprites.get('tile_hydro_floor') || tileSprite;
+            }
+          }
+        }
 
         if (tileSprite) {
           ctx.drawImage(tileSprite, tx * ts, ty * ts, ts, ts);

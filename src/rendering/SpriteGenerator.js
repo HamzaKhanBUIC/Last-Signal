@@ -493,6 +493,98 @@ export class SpriteGenerator {
       this.tileCache.set(TILE_TYPES.ESCAPE_POD, canvas);
       this.register('tile_escape_pod', canvas);
     }
+
+    // --- SECTOR VARIANT: CRYO LAB FROST FLOOR ---
+    {
+      const canvas = createOffscreenCanvas(S, S);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, S, S);
+
+      // Frost crystal veins
+      ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(2, 6);
+      ctx.lineTo(12, 16);
+      ctx.lineTo(24, 10);
+      ctx.moveTo(12, 16);
+      ctx.lineTo(18, 28);
+      ctx.stroke();
+
+      // Ice frost stippling
+      ctx.fillStyle = 'rgba(186, 230, 253, 0.4)';
+      ctx.fillRect(4, 8, 2, 2);
+      ctx.fillRect(20, 22, 2, 2);
+      ctx.fillRect(26, 6, 1, 1);
+
+      this.register('tile_cryo_floor', canvas);
+    }
+
+    // --- SECTOR VARIANT: SERVER CORE DATA FLOOR ---
+    {
+      const canvas = createOffscreenCanvas(S, S);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#090d16';
+      ctx.fillRect(0, 0, S, S);
+
+      // Dark carbon fiber grid
+      ctx.fillStyle = '#111827';
+      ctx.fillRect(1, 1, S - 2, S - 2);
+
+      // Glowing fiber-optic data channels
+      ctx.fillStyle = 'rgba(0, 240, 255, 0.45)';
+      ctx.fillRect(S / 2 - 1, 0, 2, S);
+      ctx.fillRect(0, S / 2 - 1, S, 2);
+
+      // Micro LED node
+      ctx.fillStyle = '#00ffcc';
+      ctx.fillRect(S / 2 - 2, S / 2 - 2, 4, 4);
+
+      this.register('tile_server_floor', canvas);
+    }
+
+    // --- SECTOR VARIANT: POWER SUBSTATION COPPER CONDUIT FLOOR ---
+    {
+      const canvas = createOffscreenCanvas(S, S);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#1a140e';
+      ctx.fillRect(0, 0, S, S);
+
+      // Heavy industrial copper plate
+      ctx.fillStyle = '#261b12';
+      ctx.fillRect(2, 2, S - 4, S - 4);
+
+      // Amber power conduit busbar
+      ctx.fillStyle = '#d97706';
+      ctx.fillRect(4, S / 2 - 2, S - 8, 4);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillRect(6, S / 2 - 1, S - 12, 2);
+
+      this.register('tile_power_floor', canvas);
+    }
+
+    // --- SECTOR VARIANT: HYDROPONICS BIO-GRATE FLOOR ---
+    {
+      const canvas = createOffscreenCanvas(S, S);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#0d1a14';
+      ctx.fillRect(0, 0, S, S);
+
+      // Bio-luminescent moss creep
+      ctx.fillStyle = 'rgba(16, 185, 129, 0.25)';
+      ctx.beginPath();
+      ctx.arc(8, 12, 6, 0, Math.PI * 2);
+      ctx.arc(22, 20, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Grate crossbars
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, 0, S, 2);
+      ctx.fillRect(0, S - 2, S, 2);
+
+      this.register('tile_hydro_floor', canvas);
+    }
   }
 
   // =========================================================================
@@ -744,6 +836,76 @@ export class SpriteGenerator {
 
       this.itemCache.set('terminal', canvas);
       this.register('prop_terminal', canvas);
+    }
+
+    // --- SONIC DECOY ACOUSTIC FLARE ---
+    {
+      const canvas = createOffscreenCanvas(S, S);
+      const ctx = canvas.getContext('2d');
+      const cx = S / 2;
+      const cy = S / 2;
+
+      // Acoustic Orange Resonance Aura
+      ctx.fillStyle = 'rgba(255, 120, 0, 0.25)';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 11, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Tactical Cannister Body
+      ctx.fillStyle = '#2d3748';
+      ctx.fillRect(cx - 5, cy - 8, 10, 16);
+      ctx.fillStyle = '#ff7700';
+      ctx.fillRect(cx - 4, cy - 6, 8, 4); // Hazard band
+
+      // Acoustic Speaker Grating
+      ctx.fillStyle = '#1a202c';
+      ctx.fillRect(cx - 3, cy, 6, 6);
+      ctx.fillStyle = '#ffaa00';
+      ctx.fillRect(cx - 2, cy + 1, 4, 1);
+      ctx.fillRect(cx - 2, cy + 3, 4, 1);
+
+      // Blinking Pulse LED
+      ctx.fillStyle = '#00ffcc';
+      ctx.fillRect(cx - 1, cy - 8, 2, 2);
+
+      this.itemCache.set(ITEM_TYPES.SONIC_DECOY || 'sonic_decoy', canvas);
+      this.itemCache.set('sonic_decoy', canvas);
+      this.register('item_sonic_decoy', canvas);
+    }
+
+    // --- EMP SHOCKWAVE CAPACITOR BURST ---
+    {
+      const canvas = createOffscreenCanvas(S, S);
+      const ctx = canvas.getContext('2d');
+      const cx = S / 2;
+      const cy = S / 2;
+
+      // Electromagnetic Blue/Cyan Field
+      ctx.fillStyle = 'rgba(0, 240, 255, 0.25)';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 11, 0, Math.PI * 2);
+      ctx.fill();
+
+      // High-Energy Capacitor Cylinder
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.arc(cx, cy, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      // High-Voltage Arc Ring
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Central Stun Spark Core
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(cx - 1.5, cy - 1.5, 3, 3);
+
+      this.itemCache.set(ITEM_TYPES.EMP_BURST || 'emp_burst', canvas);
+      this.itemCache.set('emp_burst', canvas);
+      this.register('item_emp_burst', canvas);
     }
   }
 

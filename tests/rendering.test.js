@@ -50,6 +50,14 @@ export function runRenderingTests(describe, test, expect) {
       expect(gen.getItem(ITEM_TYPES.BATTERY_PACK)).toBeTruthy();
       expect(gen.getItem(ITEM_TYPES.MEDKIT)).toBeTruthy();
       expect(gen.getItem('terminal')).toBeTruthy();
+      expect(gen.getItem('sonic_decoy')).toBeTruthy();
+      expect(gen.getItem('emp_burst')).toBeTruthy();
+
+      // Sector Floor Variants
+      expect(gen.get('tile_cryo_floor')).toBeTruthy();
+      expect(gen.get('tile_server_floor')).toBeTruthy();
+      expect(gen.get('tile_power_floor')).toBeTruthy();
+      expect(gen.get('tile_hydro_floor')).toBeTruthy();
 
       // Decals
       expect(gen.getDecal('blood_1')).toBeTruthy();
