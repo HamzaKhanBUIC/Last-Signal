@@ -111,17 +111,32 @@ html, body {
   justify-content: center;
 }
 
+#webgl-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background-color: #020406;
+  z-index: 1;
+}
+
 #game-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   display: block;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  background-color: #020406;
-  width: 100%;
-  height: 100%;
+  background-color: transparent;
   cursor: crosshair;
+  z-index: 2;
 }
 
-/* Optional CSS CRT Scanline & Phosphor Overlay */
+/* Optional CSS CRT Scanline & Phosphor Overlay (Subtle & High Clarity) */
 .crt-overlay {
   position: absolute;
   top: 0;
@@ -131,25 +146,19 @@ html, body {
   pointer-events: none;
   z-index: 10;
   background: 
-    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
-    radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.6) 100%);
+    linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%),
+    radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 75%, rgba(0, 0, 0, 0.35) 100%);
   background-size: 100% 4px, 100% 100%;
-  opacity: 0.85;
+  opacity: 0.35;
 }
 
 .crt-overlay.disabled {
   display: none;
 }
 
-/* Subtle CRT Flicker Animation */
-@keyframes crt-flicker {
-  0% { opacity: 0.97; }
-  50% { opacity: 1.0; }
-  100% { opacity: 0.98; }
-}
-
+/* Very subtle CRT subtle glow */
 .crt-flicker {
-  animation: crt-flicker 0.15s infinite;
+  opacity: 0.35;
 }
 
 /* ==========================================================================

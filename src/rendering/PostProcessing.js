@@ -32,9 +32,9 @@ export class PostProcessing {
     this.crtCurvatureEnabled = true;
 
     // Intensities
-    this.scanlineOpacity = 0.22;
-    this.vignetteIntensity = 0.75;
-    this.noiseOpacity = 0.05;
+    this.scanlineOpacity = 0.14;
+    this.vignetteIntensity = 0.45;
+    this.noiseOpacity = 0.03;
 
     // Internal animation timers
     this.time = 0;
@@ -56,9 +56,9 @@ export class PostProcessing {
     const scanCtx = scanCanvas.getContext('2d');
     scanCtx.fillStyle = 'rgba(0, 0, 0, 0)';
     scanCtx.fillRect(0, 0, 4, 4);
-    scanCtx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    scanCtx.fillStyle = 'rgba(0, 0, 0, 0.25)';
     scanCtx.fillRect(0, 0, 4, 2);
-    scanCtx.fillStyle = 'rgba(0, 255, 102, 0.03)'; // Subtle CRT phosphor tint
+    scanCtx.fillStyle = 'rgba(0, 255, 102, 0.02)'; // Subtle CRT phosphor tint
     scanCtx.fillRect(0, 2, 4, 2);
     this.scanlineCanvas = scanCanvas;
 
@@ -71,22 +71,22 @@ export class PostProcessing {
       imgData.data[i] = v;     // R
       imgData.data[i + 1] = v; // G
       imgData.data[i + 2] = v; // B
-      imgData.data[i + 3] = Math.random() < 0.3 ? 35 : 0; // Alpha
+      imgData.data[i + 3] = Math.random() < 0.2 ? 20 : 0; // Alpha
     }
     noiseCtx.putImageData(imgData, 0, 0);
     this.noiseCanvas = noiseCanvas;
 
-    // 3. CRT Vignette & Corner Darkening
+    // 3. CRT Vignette & Corner Darkening (High Clarity)
     const vigCanvas = createOffscreenCanvas(this.width, this.height);
     const vigCtx = vigCanvas.getContext('2d');
     const cx = this.width / 2;
     const cy = this.height / 2;
     const radius = Math.hypot(cx, cy);
 
-    const grad = vigCtx.createRadialGradient(cx, cy, radius * 0.4, cx, cy, radius * 0.95);
+    const grad = vigCtx.createRadialGradient(cx, cy, radius * 0.55, cx, cy, radius * 0.98);
     grad.addColorStop(0, 'rgba(0, 0, 0, 0)');
-    grad.addColorStop(0.7, 'rgba(3, 5, 8, 0.4)');
-    grad.addColorStop(1, 'rgba(0, 2, 5, 0.88)');
+    grad.addColorStop(0.75, 'rgba(3, 5, 8, 0.15)');
+    grad.addColorStop(1, 'rgba(0, 2, 5, 0.45)');
 
     vigCtx.fillStyle = grad;
     vigCtx.fillRect(0, 0, this.width, this.height);

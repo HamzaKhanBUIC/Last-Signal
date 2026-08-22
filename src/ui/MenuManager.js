@@ -165,10 +165,10 @@ export class MenuManager {
 
   handleTitleInput(input) {
     if (input.wasActionJustPressed('MOVE_UP') || input.wasKeyJustPressed('ArrowUp')) {
-      this.titleSelectionIndex = (this.titleSelectionIndex + 2) % 3;
+      this.titleSelectionIndex = (this.titleSelectionIndex + 3) % 4;
       this.audio?.playTerminalKeystroke();
     } else if (input.wasActionJustPressed('MOVE_DOWN') || input.wasKeyJustPressed('ArrowDown')) {
-      this.titleSelectionIndex = (this.titleSelectionIndex + 1) % 3;
+      this.titleSelectionIndex = (this.titleSelectionIndex + 1) % 4;
       this.audio?.playTerminalKeystroke();
     }
 
@@ -179,15 +179,18 @@ export class MenuManager {
     if (input.wasKeyJustPressed('Digit1')) this.activateTitleOption(0);
     if (input.wasKeyJustPressed('Digit2')) this.activateTitleOption(1);
     if (input.wasKeyJustPressed('Digit3')) this.activateTitleOption(2);
+    if (input.wasKeyJustPressed('Digit4')) this.activateTitleOption(3);
   }
 
   activateTitleOption(idx) {
     this.audio?.playTerminalBeep('data');
     if (idx === 0) {
-      if (this.onStartGame) this.onStartGame();
+      if (this.onStartGame) this.onStartGame({ tutorial: true });
     } else if (idx === 1) {
-      this.activeModal = 'CONTROLS';
+      if (this.onStartGame) this.onStartGame({ tutorial: false });
     } else if (idx === 2) {
+      this.activeModal = 'CONTROLS';
+    } else if (idx === 3) {
       this.activeModal = 'SETTINGS';
     }
   }
@@ -336,15 +339,16 @@ export class MenuManager {
     ctx.fillText('AEGIS-7 RESEARCH STATION // SECTOR 42 // QUARANTINE OVERRIDE', width / 2, titleY + 45);
 
     // Main Buttons
-    const btnW = 380;
-    const btnH = 48;
-    const startY = height * 0.52;
-    const gap = 18;
+    const btnW = 420;
+    const btnH = 44;
+    const startY = height * 0.48;
+    const gap = 14;
 
     const options = [
-      { label: '[1] INITIATE VANCE PROTOCOL (START)', action: () => this.activateTitleOption(0) },
-      { label: '[2] MISSION DIRECTIVES & CONTROLS', action: () => this.activateTitleOption(1) },
-      { label: '[3] SYSTEM & AUDIO SETTINGS', action: () => this.activateTitleOption(2) }
+      { label: '▶ [1] INITIATE GUIDED MISSION (TUTORIAL ON)', action: () => this.activateTitleOption(0) },
+      { label: '💀 [2] INITIATE EXPERT MISSION (STANDARD)', action: () => this.activateTitleOption(1) },
+      { label: '📡 [3] MISSION DIRECTIVES & MANUAL', action: () => this.activateTitleOption(2) },
+      { label: '⚙️ [4] SYSTEM & AUDIO SETTINGS', action: () => this.activateTitleOption(3) }
     ];
 
     options.forEach((opt, idx) => {
@@ -370,13 +374,15 @@ export class MenuManager {
     // Footer Credits & Version
     ctx.font = '11px "Share Tech Mono", monospace, monospace';
     ctx.fillStyle = '#445566';
-    ctx.fillText('THE LAST SIGNAL v1.0.0 // ZERO EXTERNAL ASSETS // 100% PROCEDURAL AUDIO & CANVAS 2D', width / 2, height - 25);
+    ctx.fillText('THE LAST SIGNAL v2.2.0 // ZERO EXTERNAL ASSETS // 100% PROCEDURAL AUDIO & CANVAS 2D', width / 2, height - 25);
     ctx.textAlign = 'left';
 
-    // Render active sub-modal if open
+    // Render active sub-modal if open (CLEAR HITBOXES TO PREVENT CLICK-THROUGH)
     if (this.activeModal === 'CONTROLS') {
+      this.hitboxes = [];
       this.renderControlsModal(ctx, width, height);
     } else if (this.activeModal === 'SETTINGS') {
+      this.hitboxes = [];
       this.renderSettingsModal(ctx, width, height);
     }
   }
@@ -474,8 +480,10 @@ export class MenuManager {
     ctx.textAlign = 'left';
 
     if (this.activeModal === 'CONTROLS') {
+      this.hitboxes = [];
       this.renderControlsModal(ctx, width, height);
     } else if (this.activeModal === 'SETTINGS') {
+      this.hitboxes = [];
       this.renderSettingsModal(ctx, width, height);
     }
   }
@@ -656,105 +664,151 @@ export class MenuManager {
   // =========================================================================
 
   renderControlsModal(ctx, width = CANVAS_WIDTH, height = CANVAS_HEIGHT) {
+    this.hitboxes = [];
+
     ctx.fillStyle = 'rgba(2, 6, 12, 0.94)';
     ctx.fillRect(0, 0, width, height);
 
-    const winW = 760;
-    const winH = 520;
+    const winW = 860;
+    const winH = 560;
     const winX = (width - winW) / 2;
     const winY = (height - winH) / 2;
 
-    ctx.fillStyle = 'rgba(6, 16, 24, 0.98)';
+    ctx.fillStyle = 'rgba(6, 16, 26, 0.98)';
     ctx.fillRect(winX, winY, winW, winH);
     ctx.strokeStyle = COLORS.CYAN_BRIGHT;
     ctx.lineWidth = 2;
     ctx.strokeRect(winX, winY, winW, winH);
-    this.drawCornerBrackets(ctx, winX, winY, winW, winH, COLORS.CYAN_BRIGHT, 8);
+    this.drawCornerBrackets(ctx, winX, winY, winW, winH, COLORS.CYAN_BRIGHT, 10);
 
-    ctx.font = 'bold 16px "Share Tech Mono", monospace, monospace';
+    // Title
+    ctx.font = 'bold 17px "Share Tech Mono", monospace';
     ctx.fillStyle = COLORS.CYAN_BRIGHT;
     ctx.textAlign = 'center';
-    ctx.fillText('TACTICAL CONTROLS & SURVIVAL DIRECTIVES', width / 2, winY + 36);
+    ctx.fillText('📡 MISSION DIRECTIVES & TACTICAL SURVIVAL GUIDE', width / 2, winY + 34);
 
-    const leftX = winX + 40;
-    const rightX = winX + 400;
-    let textY = winY + 75;
+    const col1X = winX + 30;
+    const col2X = winX + 440;
+    let y1 = winY + 70;
 
-    ctx.font = '12px "Share Tech Mono", monospace, monospace';
-    ctx.textAlign = 'left';
-
-    // Left Column: Key Controls
+    // LEFT COLUMN: CONTROLS & CRAFTING
+    ctx.font = 'bold 12px "Share Tech Mono", monospace';
     ctx.fillStyle = COLORS.CRT_GREEN_BRIGHT;
-    ctx.fillText('OPERATOR CONTROLS:', leftX, textY);
-    textY += 24;
+    ctx.textAlign = 'left';
+    ctx.fillText('🕹️ OPERATOR KEYBINDINGS & ACTIONS:', col1X, y1);
+    y1 += 22;
 
     const controls = [
-      { key: 'W, A, S, D', desc: 'Omnidirectional Movement' },
-      { key: 'MOUSE', desc: 'Aim Flashlight & Direction' },
-      { key: 'SHIFT', desc: 'Sprint (Fast, loud noise)' },
-      { key: 'CTRL / C', desc: 'Crouch (Stealth, 0 noise)' },
-      { key: 'F / R-CLICK', desc: 'Toggle Flashlight' },
-      { key: 'E / L-CLICK', desc: 'Interact / Terminals / Lockers' },
-      { key: '1 / 2', desc: 'Use Medkit / Battery Pack' },
-      { key: '3 / 4', desc: 'Deploy Sonic Decoy / EMP Burst' },
-      { key: 'M / TAB', desc: 'Tactical Station PDA Map' },
-      { key: 'ESC / P', desc: 'Pause Mission' }
+      { key: 'W, A, S, D / ARROWS', desc: 'Move Dr. Vance' },
+      { key: 'MOUSE CURSOR', desc: 'Aim Flashlight Beam' },
+      { key: 'E / LEFT-CLICK', desc: 'Interact / Terminals / Lockers' },
+      { key: 'F / RIGHT-CLICK', desc: 'Toggle Tactical Flashlight' },
+      { key: 'SHIFT (HOLD)', desc: 'Sprint (Fast, audible up to 350px)' },
+      { key: 'CTRL / C (HOLD)', desc: 'Crouch (Stealth, 0 noise emitted)' },
+      { key: 'C (TAP)', desc: 'Open Field Crafting Synthesis Bench' },
+      { key: 'M / TAB', desc: 'Station PDA Map & Biometric Doll' },
+      { key: '1 / 2', desc: 'Quick Use: Medkit / Battery Cell' },
+      { key: '3 / 4', desc: 'Quick Use: Sonic Decoy / EMP Stun' },
+      { key: 'ESC / P', desc: 'Pause Simulation & Settings' }
     ];
 
     controls.forEach(c => {
+      ctx.font = 'bold 11px "Share Tech Mono", monospace';
       ctx.fillStyle = '#ffffff';
-      ctx.fillText(c.key, leftX, textY);
-      ctx.fillStyle = '#88aacc';
-      ctx.fillText(`— ${c.desc}`, leftX + 110, textY);
-      textY += 21;
+      ctx.fillText(c.key, col1X, y1);
+      ctx.font = '11px "Share Tech Mono", monospace';
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText(`→ ${c.desc}`, col1X + 145, y1);
+      y1 += 20;
     });
 
-    // Right Column: Survival Rules & NEXUS-9 Threat Advisory
-    let rightY = winY + 75;
-    ctx.fillStyle = COLORS.ALERT_RED_BRIGHT;
-    ctx.fillText('NEXUS-9 THREAT ADVISORY:', rightX, rightY);
-    rightY += 24;
+    // RIGHT COLUMN: MISSION OBJECTIVES ROADMAP
+    let y2 = winY + 70;
+    ctx.font = 'bold 12px "Share Tech Mono", monospace';
+    ctx.fillStyle = COLORS.AMBER_BRIGHT;
+    ctx.fillText('🗺️ STEP-BY-STEP MISSION OBJECTIVES:', col2X, y2);
+    y2 += 22;
 
-    const rules = [
-      '• Entity tracks SPRINT FOOTSTEPS up to 350px.',
-      '• Crouch to emit 0 noise in dark corridors.',
-      '• Use [3] SONIC DECOYS to lure entity away.',
-      '• Discharge [4] EMP BURST to stun entity for 4.5s.',
-      '• Hide in CREW LOCKERS [E] when unobserved.',
-      '• Beware LIVE ELECTRICAL WIRES & CRYO VENTS.',
-      '• Find 3 Signal Fragments [CRY-01, PWR-02, DAT-03].',
-      '• Align Oscilloscope waveforms to decrypt.',
-      '• Restore Reactor Power, Transmit & Evacuate!'
+    const steps = [
+      { step: '1. AWAKEN (HABITATION)', desc: 'Exit cryo pod. Grab initial supplies.' },
+      { step: '2. BLUE KEYCARD', desc: 'Secure Blue Keycard in Sector 2 Hub.' },
+      { step: '3. SIGNAL ALPHA [CRY-01]', desc: 'Unlock Cryo Labs. Watch hypothermia.' },
+      { step: '4. SIGNAL BETA & RED CARD', desc: 'Reboot Reactor in Power Substation.' },
+      { step: '5. SIGNAL GAMMA & MASTER', desc: 'Recover Gamma Core in Server Vault.' },
+      { step: '6. COMMS OSCILLOSCOPE', desc: 'Align waveforms & broadcast signal.' },
+      { step: '7. ESCAPE AIRLOCK', desc: 'Evacuate via Escape Pod before Frenzy!' }
     ];
 
-    rules.forEach(r => {
-      ctx.fillStyle = '#ddbbcc';
-      ctx.fillText(r, rightX, rightY);
-      rightY += 22;
+    steps.forEach(s => {
+      ctx.font = 'bold 11px "Share Tech Mono", monospace';
+      ctx.fillStyle = COLORS.CYAN_BRIGHT;
+      ctx.fillText(s.step, col2X, y2);
+      ctx.font = '11px "Share Tech Mono", monospace';
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillText(s.desc, col2X, y2 + 14);
+      y2 += 34;
     });
 
-    // Close Button
-    const closeBtnX = (width - 200) / 2;
-    const closeBtnY = winY + winH - 55;
-    const closeBtnW = 200;
-    const closeBtnH = 38;
+    // Threat Warning Note
+    ctx.fillStyle = 'rgba(255, 34, 68, 0.15)';
+    ctx.fillRect(col2X, y2, 380, 52);
+    ctx.strokeStyle = COLORS.ALERT_RED_BRIGHT;
+    ctx.strokeRect(col2X, y2, 380, 52);
 
-    ctx.fillStyle = 'rgba(0, 240, 255, 0.2)';
-    ctx.fillRect(closeBtnX, closeBtnY, closeBtnW, closeBtnH);
-    ctx.strokeStyle = COLORS.CYAN_BRIGHT;
-    ctx.strokeRect(closeBtnX, closeBtnY, closeBtnW, closeBtnH);
+    ctx.font = 'bold 11px "Share Tech Mono", monospace';
+    ctx.fillStyle = COLORS.ALERT_RED_BRIGHT;
+    ctx.fillText('⚠️ NEXUS-9 ENTITY SURVIVAL NOTE:', col2X + 10, y2 + 18);
+    ctx.font = '10px "Share Tech Mono", monospace';
+    ctx.fillStyle = '#fca5a5';
+    ctx.fillText('Crouch to avoid acoustic detection. Use EMP & Lockers to break LOS.', col2X + 10, y2 + 36);
 
-    ctx.font = 'bold 13px "Share Tech Mono", monospace, monospace';
+    // DUAL ACTION BUTTONS (BOTTOM)
+    const btnW = 220;
+    const btnH = 42;
+    const btnY = winY + winH - 58;
+
+    // 1. START MISSION NOW BUTTON
+    const startBtnX = width / 2 - btnW - 16;
+    ctx.fillStyle = 'rgba(0, 255, 102, 0.25)';
+    ctx.fillRect(startBtnX, btnY, btnW, btnH);
+    ctx.strokeStyle = COLORS.CRT_GREEN_BRIGHT;
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(startBtnX, btnY, btnW, btnH);
+
+    ctx.font = 'bold 13px "Share Tech Mono", monospace';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
-    ctx.fillText('[ ESC ] RETURN', width / 2, closeBtnY + 24);
+    ctx.fillText('▶ INITIATE MISSION NOW', startBtnX + btnW / 2, btnY + 26);
+
+    this.hitboxes.push({
+      x: startBtnX,
+      y: btnY,
+      w: btnW,
+      h: btnH,
+      action: () => {
+        this.activeModal = null;
+        if (this.onStartGame) this.onStartGame();
+      }
+    });
+
+    // 2. RETURN TO MENU BUTTON
+    const retBtnX = width / 2 + 16;
+    ctx.fillStyle = 'rgba(0, 240, 255, 0.2)';
+    ctx.fillRect(retBtnX, btnY, btnW, btnH);
+    ctx.strokeStyle = COLORS.CYAN_BRIGHT;
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(retBtnX, btnY, btnW, btnH);
+
+    ctx.font = 'bold 13px "Share Tech Mono", monospace';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('[ ESC ] RETURN TO MENU', retBtnX + btnW / 2, btnY + 26);
     ctx.textAlign = 'left';
 
     this.hitboxes.push({
-      x: closeBtnX,
-      y: closeBtnY,
-      w: closeBtnW,
-      h: closeBtnH,
+      x: retBtnX,
+      y: btnY,
+      w: btnW,
+      h: btnH,
       action: () => {
         this.activeModal = null;
         this.audio?.playTerminalKeystroke();

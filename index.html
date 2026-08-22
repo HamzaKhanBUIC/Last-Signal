@@ -20,7 +20,10 @@
   <div id="game-wrapper">
     <!-- Main CRT Bezel Frame -->
     <div class="crt-bezel">
-      <!-- Master Game Canvas (1280x720 internal resolution) -->
+      <!-- 3D WebGL Background / Scene Canvas -->
+      <canvas id="webgl-canvas" width="1280" height="720"></canvas>
+
+      <!-- 2D Master Game HUD & Overlay Canvas -->
       <canvas id="game-canvas" width="1280" height="720"></canvas>
 
       <!-- Retro CRT Scanline & Curved Vignette Overlay -->

@@ -22,14 +22,16 @@ import { SurvivalSystem } from './SurvivalSystem.js';
 import { CraftingSystem } from './CraftingSystem.js';
 import { CraftingUI } from '../ui/CraftingUI.js';
 import { ThreeRenderer } from '../rendering/ThreeRenderer.js';
+import { TutorialSystem } from './TutorialSystem.js';
 
 export class Engine {
   /**
    * @param {HTMLCanvasElement} canvas
+   * @param {Object} [options]
    */
-  constructor(canvas) {
+  constructor(canvas, options = {}) {
     this.canvas = canvas;
-    this.ctx = canvas.getContext('2d', { alpha: false });
+    this.ctx = canvas.getContext('2d', { alpha: true });
 
     // Subsystems
     this.eventBus = new EventBus();
@@ -52,7 +54,8 @@ export class Engine {
     this.survival = new SurvivalSystem(this.eventBus);
     this.crafting = new CraftingSystem(this.eventBus);
     this.craftingUI = new CraftingUI(this.eventBus, this.crafting);
-    this.threeRenderer = new ThreeRenderer(this.canvas);
+    this.threeRenderer = new ThreeRenderer(options.webglCanvas || null);
+    this.tutorial = new TutorialSystem(this.eventBus);
 
     // Rendering & Entities (wired on initialization)
     this.renderer = null;
@@ -473,15 +476,27 @@ export class Engine {
       this.gameState.survivalReport = this.survival.getReport();
       this.player.speedMultiplier = this.survival.getMovementMultiplier();
     }
+
+    // 7. Update Guided Tutorial Engine
+    this.tutorial?.update(fixedDt, this.player);
   }
 
   /**
    * Master Render Step.
    */
   render() {
-    // Clear canvas
-    this.ctx.fillStyle = COLORS.BACKGROUND_BLACK;
-    this.ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    const is3D = this.threeRenderer && this.threeRenderer.isWebGLAvailable;
+
+    if (is3D) {
+      this.ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      if (this.gameState.state === GAME_STATES.PLAYING || this.gameState.state === GAME_STATES.PAUSED) {
+        this.threeRenderer.render(this.player, this.enemy, this.fixedStep, this.camera);
+      }
+    } else {
+      // Clear canvas
+      this.ctx.fillStyle = COLORS.BACKGROUND_BLACK;
+      this.ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    }
 
     if (this.gameState.state === GAME_STATES.TITLE) {
       this.menuManager?.renderTitle(this.ctx, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -493,37 +508,39 @@ export class Engine {
       return;
     }
 
-    // Apply Camera Transform
-    this.camera.apply(this.ctx);
+    if (!is3D) {
+      // Apply Camera Transform
+      this.camera.apply(this.ctx);
 
-    // 1. Render World (Floor, walls, decals)
-    this.renderer?.renderWorld(this.ctx, this.level, this.camera);
+      // 1. Render World (Floor, walls, decals)
+      this.renderer?.renderWorld(this.ctx, this.level, this.camera);
 
-    // 2. Render Interactables (Doors, terminals, fragments, items)
-    if (this.interactables) {
-      for (const item of this.interactables) {
-        if (item.active && this.camera.isRectInView(item.x - 32, item.y - 32, 64, 64)) {
-          item.render(this.ctx, this.camera);
+      // 2. Render Interactables (Doors, terminals, fragments, items)
+      if (this.interactables) {
+        for (const item of this.interactables) {
+          if (item.active && this.camera.isRectInView(item.x - 32, item.y - 32, 64, 64)) {
+            item.render(this.ctx, this.camera);
+          }
         }
       }
-    }
 
-    // 3. Render Particles (Floor level: dust, steam)
-    this.particles?.renderFloor?.(this.ctx, this.camera);
+      // 3. Render Particles (Floor level: dust, steam)
+      this.particles?.renderFloor?.(this.ctx, this.camera);
 
-    // 4. Render Entities (Player, NEXUS-9)
-    if (this.player) this.player.render(this.ctx, this.camera);
-    if (this.enemy && this.enemy.active) this.enemy.render(this.ctx, this.camera);
+      // 4. Render Entities (Player, NEXUS-9)
+      if (this.player) this.player.render(this.ctx, this.camera);
+      if (this.enemy && this.enemy.active) this.enemy.render(this.ctx, this.camera);
 
-    // 5. Render Top Particles (Sparks, blood, glitch shards)
-    this.particles?.renderTop?.(this.ctx, this.camera);
+      // 5. Render Top Particles (Sparks, blood, glitch shards)
+      this.particles?.renderTop?.(this.ctx, this.camera);
 
-    // Restore Camera context before Lighting & Overlays
-    this.camera.restore(this.ctx);
+      // Restore Camera context before Lighting & Overlays
+      this.camera.restore(this.ctx);
 
-    // 6. Dynamic 2D Lighting & Shadow Mask
-    if (this.lighting && this.gameState.state !== GAME_STATES.TITLE) {
-      this.lighting.render(this.ctx, this.player, this.enemy, this.level, this.camera);
+      // 6. Dynamic 2D Lighting & Shadow Mask
+      if (this.lighting && this.gameState.state !== GAME_STATES.TITLE) {
+        this.lighting.render(this.ctx, this.player, this.enemy, this.level, this.camera);
+      }
     }
 
     // 7. Post-Processing Effects (CRT Scanlines, Chromatic Aberration, Glitch)
@@ -531,9 +548,16 @@ export class Engine {
       this.renderer.postProcessing.render(this.ctx, this.entityDistance, this.camera.trauma);
     }
 
-    // 8. HUD & UI Overlays
+    // 8. HUD & UI Overlays (with Tutorial Guidance Banner)
     if (this.gameState.state === GAME_STATES.PLAYING || this.gameState.state === GAME_STATES.PAUSED) {
-      this.hud?.render(this.ctx, this.gameState, this.player, this.enemy, this.currentSector);
+      this.hud?.render(
+        this.ctx,
+        this.gameState,
+        this.player,
+        this.enemy,
+        this.currentSector,
+        this.tutorial?.getCurrentStep()
+      );
     }
 
     // 9. Modal UI (Terminal, Minigame, Pause, GameOver, Victory, Crafting)

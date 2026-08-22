@@ -31,13 +31,14 @@ window.addEventListener('DOMContentLoaded', async () => {
   console.log('====================================================');
 
   const canvas = document.getElementById('game-canvas');
+  const webglCanvas = document.getElementById('webgl-canvas');
   if (!canvas) {
     console.error('[Main] Target #game-canvas not found!');
     return;
   }
 
-  // 1. Instantiate Core Game Engine
-  const engine = new Engine(canvas);
+  // 1. Instantiate Core Game Engine (with dual-layer WebGL canvas)
+  const engine = new Engine(canvas, { webglCanvas });
 
   // 2. Instantiate Rendering Subsystems
   const spriteGen = new SpriteGenerator();
@@ -73,13 +74,13 @@ window.addEventListener('DOMContentLoaded', async () => {
     audio: engine.audio,
     eventBus: engine.eventBus,
     gameState: engine.gameState,
-    onStartGame: () => startSession(),
-    onRestartGame: () => startSession()
+    onStartGame: (opts) => startSession(opts),
+    onRestartGame: () => startSession({ tutorial: true })
   });
 
   // 4. Session Start / Reset Helper
-  function startSession() {
-    console.log('[Main] Initializing fresh gameplay session...');
+  function startSession(options = {}) {
+    console.log('[Main] Initializing fresh gameplay session...', options);
 
     // Particle System
     const particles = new ParticleSystem(600);
@@ -113,8 +114,13 @@ window.addEventListener('DOMContentLoaded', async () => {
       particles
     });
 
-    // Show tutorial welcome toast
-    hud.showToast('AEGIS-7 LIFE SUPPORT: 100% // LOCATE SIGNAL FRAGMENT ALPHA', 'info', 4.5);
+    // Trigger guided tutorial if requested
+    if (options.tutorial !== false) {
+      engine.tutorial?.startTutorial();
+    } else {
+      engine.tutorial?.skipTutorial();
+      hud.showToast('EXPERT MODE: SURVIVE AEGIS-7 AND BROADCAST THE SIGNAL', 'info', 4.5);
+    }
   }
 
   // 5. Initialize Engine with injected modules
@@ -237,11 +243,12 @@ function setupTouchControls(engine) {
   window.addEventListener('touchend', endJoystick);
   window.addEventListener('touchcancel', endJoystick);
 
-  // Tactical Touch Buttons
+  // Tactical Touch & Mouse Buttons
   const bindTouchButton = (elemId, action) => {
     const btn = document.getElementById(elemId);
     if (!btn) return;
 
+    // Mobile touch events
     btn.addEventListener('touchstart', (e) => {
       e.preventDefault();
       btn.classList.add('active');
@@ -253,6 +260,24 @@ function setupTouchControls(engine) {
       btn.classList.remove('active');
       engine.input.setVirtualAction(action, false);
     }, { passive: false });
+
+    // Desktop mouse events
+    btn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      btn.classList.add('active');
+      engine.input.setVirtualAction(action, true);
+    });
+
+    btn.addEventListener('mouseup', (e) => {
+      e.preventDefault();
+      btn.classList.remove('active');
+      engine.input.setVirtualAction(action, false);
+    });
+
+    btn.addEventListener('mouseleave', () => {
+      btn.classList.remove('active');
+      engine.input.setVirtualAction(action, false);
+    });
   };
 
   bindTouchButton('btn-interact', INPUT_ACTIONS.INTERACT);

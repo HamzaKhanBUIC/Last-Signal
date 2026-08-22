@@ -157,8 +157,9 @@ export class HUD {
    * @param {Object} [player]
    * @param {Object} [enemy]
    * @param {string} [currentSector='Unknown Sector']
+   * @param {Object} [tutorialStep=null] Active tutorial step info
    */
-  render(ctx, gameState, player = null, enemy = null, currentSector = 'Sector 1: Habitation') {
+  render(ctx, gameState, player = null, enemy = null, currentSector = 'Sector 1: Habitation', tutorialStep = null) {
     ctx.save();
 
     // 0. Locker Hiding Cinematic Viewport Overlay
@@ -166,8 +167,12 @@ export class HUD {
       this.renderHidingOverlay(ctx, player);
     }
 
-    // 1. Top Left: Objective Tracker Banner & Sector Info
-    this.renderObjectiveBanner(ctx, gameState, currentSector);
+    // 1. Top Header: Guided Tutorial Banner OR Standard Objective Tracker
+    if (tutorialStep) {
+      this.renderTutorialBanner(ctx, tutorialStep, currentSector);
+    } else {
+      this.renderObjectiveBanner(ctx, gameState, currentSector);
+    }
 
     // 2. Top Right: Signal Fragment Holographic Matrix
     this.renderFragmentSlots(ctx, gameState);
@@ -197,6 +202,51 @@ export class HUD {
     }
 
     ctx.restore();
+  }
+
+  /**
+   * Renders the interactive Tutorial Guidance Banner at top left.
+   * @param {CanvasRenderingContext2D} ctx
+   * @param {Object} step
+   * @param {string} currentSector
+   */
+  renderTutorialBanner(ctx, step, currentSector) {
+    const x = 24;
+    const y = 16;
+    const w = 760;
+    const h = 76;
+
+    // Glowing Frame
+    ctx.fillStyle = 'rgba(4, 12, 22, 0.95)';
+    ctx.fillRect(x, y, w, h);
+
+    const pulse = Math.abs(Math.sin(this.animTime * 4));
+    ctx.strokeStyle = COLORS.CYAN_BRIGHT;
+    ctx.lineWidth = 1.8;
+    ctx.strokeRect(x, y, w, h);
+    this.drawCornerBrackets(ctx, x, y, w, h, COLORS.CYAN_BRIGHT, 8);
+
+    // Header Tag with Location
+    ctx.font = 'bold 11px "Share Tech Mono", monospace';
+    ctx.fillStyle = COLORS.AMBER_BRIGHT;
+    ctx.fillText(`📡 ONBOARDING // ${step.title}`, x + 16, y + 20);
+
+    ctx.fillStyle = COLORS.CYAN;
+    ctx.fillText(`[ ${currentSector.toUpperCase()} ]`, x + 340, y + 20);
+
+    ctx.font = '10px "Share Tech Mono", monospace';
+    ctx.fillStyle = '#64748b';
+    ctx.fillText('[ESC: SKIP TUTORIAL]', x + w - 140, y + 20);
+
+    // Main Directive Instruction
+    ctx.font = 'bold 13px "Share Tech Mono", monospace';
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(step.instruction, x + 16, y + 44);
+
+    // Sub-Hint
+    ctx.font = '11px "Share Tech Mono", monospace';
+    ctx.fillStyle = COLORS.CYAN_BRIGHT;
+    ctx.fillText(`• ${step.hint}`, x + 16, y + 64);
   }
 
   /**
@@ -255,11 +305,11 @@ export class HUD {
   renderObjectiveBanner(ctx, gameState, currentSector) {
     const x = 24;
     const y = 20;
-    const width = 420;
-    const height = 66;
+    const width = 450;
+    const height = 74;
 
     // Panel Background
-    ctx.fillStyle = 'rgba(6, 12, 20, 0.82)';
+    ctx.fillStyle = 'rgba(6, 12, 20, 0.88)';
     ctx.fillRect(x, y, width, height);
 
     // Panel Outer Border & Tech Brackets
@@ -275,30 +325,26 @@ export class HUD {
     this.drawCornerBrackets(ctx, x, y, width, height, COLORS.CYAN_BRIGHT, 8);
 
     // Header Tag: Sector Info & Transceiver Link
-    ctx.font = '11px "Share Tech Mono", monospace, monospace';
-    ctx.fillStyle = COLORS.CYAN;
+    ctx.font = 'bold 11px "Share Tech Mono", monospace';
+    ctx.fillStyle = COLORS.CYAN_BRIGHT;
     ctx.fillText(`LOCATION: ${currentSector.toUpperCase()}`, x + 14, y + 18);
 
     const blink = Math.sin(this.animTime * 4) > 0;
     ctx.fillStyle = blink ? COLORS.CRT_GREEN_BRIGHT : COLORS.CRT_GREEN_DARK;
-    ctx.fillText(`● LINK ONLINE`, x + width - 96, y + 18);
+    ctx.fillText(`● TRANSCEIVER ACTIVE`, x + width - 130, y + 18);
 
     // Main Objective Text
-    ctx.font = 'bold 13px "Share Tech Mono", monospace, monospace';
+    ctx.font = 'bold 13px "Share Tech Mono", monospace';
     ctx.fillStyle = '#ffffff';
 
     const objText = gameState.currentObjective || 'Explore AEGIS-7 Station and survive.';
-    // Truncate or wrap if too long
-    const displayObj = objText.length > 52 ? objText.substring(0, 49) + '...' : objText;
-    ctx.fillText(`DIRECTIVE: ${displayObj}`, x + 14, y + 42);
+    const displayObj = objText.length > 56 ? objText.substring(0, 53) + '...' : objText;
+    ctx.fillText(`MISSION: ${displayObj}`, x + 14, y + 42);
 
-    // Small progress bar under objective
-    const fragCount = gameState.getFragmentCount ? gameState.getFragmentCount() : 0;
-    const progressW = (width - 28) * (fragCount / 3);
-    ctx.fillStyle = 'rgba(0, 240, 255, 0.15)';
-    ctx.fillRect(x + 14, y + 54, width - 28, 4);
-    ctx.fillStyle = COLORS.CYAN_BRIGHT;
-    ctx.fillRect(x + 14, y + 54, progressW, 4);
+    // In-game controls reminder footer
+    ctx.font = '10px "Share Tech Mono", monospace';
+    ctx.fillStyle = COLORS.AMBER_BRIGHT;
+    ctx.fillText(`[M] PDA MAP & TRAUMA  •  [C] CRAFT  •  [E] INTERACT  •  [F] LIGHT`, x + 14, y + 62);
   }
 
   // =========================================================================

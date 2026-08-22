@@ -264,15 +264,15 @@ export function runUITests(describe, test, expect) {
         onStartGame: () => { started = true; }
       });
 
-      menu.activateTitleOption(1); // Open Controls
+      menu.activateTitleOption(2); // Open Controls
       expect(menu.activeModal).toBe('CONTROLS');
 
       menu.activeModal = null;
-      menu.activateTitleOption(2); // Open Settings
+      menu.activateTitleOption(3); // Open Settings
       expect(menu.activeModal).toBe('SETTINGS');
 
       menu.activeModal = null;
-      menu.activateTitleOption(0); // Start Game
+      menu.activateTitleOption(0); // Start Game (Guided)
       expect(started).toBe(true);
     });
 

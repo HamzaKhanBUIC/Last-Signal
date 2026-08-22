@@ -261,6 +261,7 @@ export class LightingSystem {
     this.darknessCtx.setTransform(1, 0, 0, 1, 0, 0);
     this.darknessCtx.globalCompositeOperation = 'source-over';
     this.darknessCtx.fillStyle = this.ambientDarkness;
+    this.darknessCtx.fillStyle = 'rgba(3, 7, 14, 0.9)';
     this.darknessCtx.fillRect(0, 0, this.width, this.height);
 
     // Apply camera viewport transformation to darkness canvas
@@ -381,7 +382,7 @@ export class LightingSystem {
     // -------------------------------------------------------------
     if (player) {
       // 1. Ambient 360-degree Halo (Dr. Vance's suit glow / low light)
-      const haloRadius = FLASHLIGHT_INNER_RADIUS || 38;
+      const haloRadius = 64;
       const haloPoly = this.computeVisibilityPolygon(
         player.x,
         player.y,
