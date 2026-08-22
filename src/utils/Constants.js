@@ -251,7 +251,8 @@ export const INPUT_ACTIONS = Object.freeze({
   USE_MEDKIT: 'USE_MEDKIT',
   USE_BATTERY: 'USE_BATTERY',
   USE_DECOY: 'USE_DECOY',
-  USE_EMP: 'USE_EMP'
+  USE_EMP: 'USE_EMP',
+  CRAFTING: 'CRAFTING'
 });
 
 export const EVENTS = Object.freeze({

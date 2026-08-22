@@ -48,15 +48,16 @@ export class InputManager {
       [INPUT_ACTIONS.MOVE_LEFT]: ['KeyA', 'ArrowLeft'],
       [INPUT_ACTIONS.MOVE_RIGHT]: ['KeyD', 'ArrowRight'],
       [INPUT_ACTIONS.SPRINT]: ['ShiftLeft', 'ShiftRight'],
-      [INPUT_ACTIONS.CROUCH]: ['ControlLeft', 'ControlRight', 'KeyC'],
+      [INPUT_ACTIONS.CROUCH]: ['ControlLeft', 'ControlRight', 'KeyZ'],
       [INPUT_ACTIONS.FLASHLIGHT]: ['KeyF'],
-      [INPUT_ACTIONS.INTERACT]: ['KeyE', 'Space'],
+      [INPUT_ACTIONS.INTERACT]: ['KeyE', 'Space', 'Enter'],
       [INPUT_ACTIONS.MAP]: ['KeyM', 'Tab'],
       [INPUT_ACTIONS.PAUSE]: ['Escape', 'KeyP'],
       [INPUT_ACTIONS.USE_MEDKIT]: ['Digit1', 'Numpad1', 'Key1'],
       [INPUT_ACTIONS.USE_BATTERY]: ['Digit2', 'Numpad2', 'Key2'],
       [INPUT_ACTIONS.USE_DECOY]: ['Digit3', 'Numpad3', 'Key3', 'KeyG'],
-      [INPUT_ACTIONS.USE_EMP]: ['Digit4', 'Numpad4', 'Key4', 'KeyQ']
+      [INPUT_ACTIONS.USE_EMP]: ['Digit4', 'Numpad4', 'Key4', 'KeyQ'],
+      [INPUT_ACTIONS.CRAFTING]: ['KeyC', 'KeyX']
     };
 
     // Gamepad API state

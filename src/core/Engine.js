@@ -370,9 +370,6 @@ export class Engine {
    * @param {number} dt Delta time in seconds
    */
   update(dt) {
-    // Always update Input states
-    this.input.update();
-
     // Check Pause Toggle
     if (this.input.wasActionJustPressed('PAUSE')) {
       if (this.gameState.state === GAME_STATES.PLAYING) {
@@ -385,6 +382,19 @@ export class Engine {
     // Check Tactical Map Toggle
     if (this.input.wasActionJustPressed('MAP')) {
       this.hud?.toggleMap();
+    }
+
+    // Check Crafting Bench Toggle
+    if (this.input.wasActionJustPressed('CRAFTING') || this.input.wasKeyJustPressed('KeyC')) {
+      if (this.gameState.state === GAME_STATES.PLAYING) {
+        this.craftingUI?.toggle();
+        this.eventBus.emit('CRAFTING_TOGGLED');
+      }
+    }
+
+    // Modal UI Input routing
+    if (this.craftingUI?.isOpen) {
+      this.craftingUI.handleInput(this.input);
     }
 
     // Only update gameplay physics/AI if in PLAYING state
@@ -425,6 +435,9 @@ export class Engine {
 
     // UI Toast and animations
     this.hud?.update?.(dt);
+
+    // CRITICAL: Reset single-frame edge triggers at the END of frame cycle after all systems have processed input
+    this.input.update();
   }
 
   /**
