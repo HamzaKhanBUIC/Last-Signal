@@ -485,18 +485,9 @@ export class Engine {
    * Master Render Step.
    */
   render() {
-    const is3D = this.threeRenderer && this.threeRenderer.isWebGLAvailable;
-
-    if (is3D) {
-      this.ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      if (this.gameState.state === GAME_STATES.PLAYING || this.gameState.state === GAME_STATES.PAUSED) {
-        this.threeRenderer.render(this.player, this.enemy, this.fixedStep, this.camera);
-      }
-    } else {
-      // Clear canvas
-      this.ctx.fillStyle = COLORS.BACKGROUND_BLACK;
-      this.ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    }
+    // 0. Clear canvas to deep space station background
+    this.ctx.fillStyle = COLORS.BACKGROUND_BLACK;
+    this.ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     if (this.gameState.state === GAME_STATES.TITLE) {
       this.menuManager?.renderTitle(this.ctx, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -508,39 +499,37 @@ export class Engine {
       return;
     }
 
-    if (!is3D) {
-      // Apply Camera Transform
-      this.camera.apply(this.ctx);
+    // Apply Camera Viewport Transform
+    this.camera.apply(this.ctx);
 
-      // 1. Render World (Floor, walls, decals)
-      this.renderer?.renderWorld(this.ctx, this.level, this.camera);
+    // 1. Render World Tilemap (Floors, Walls, Bulkheads, Decals)
+    this.renderer?.renderWorld(this.ctx, this.level, this.camera);
 
-      // 2. Render Interactables (Doors, terminals, fragments, items)
-      if (this.interactables) {
-        for (const item of this.interactables) {
-          if (item.active && this.camera.isRectInView(item.x - 32, item.y - 32, 64, 64)) {
-            item.render(this.ctx, this.camera);
-          }
+    // 2. Render Interactive Station Props (Doors, Terminals, Fragments, Batteries, Medkits, Lockers)
+    if (this.interactables) {
+      for (const item of this.interactables) {
+        if (item.active && this.camera.isRectInView(item.x - 48, item.y - 48, 96, 96)) {
+          item.render(this.ctx, this.camera);
         }
       }
+    }
 
-      // 3. Render Particles (Floor level: dust, steam)
-      this.particles?.renderFloor?.(this.ctx, this.camera);
+    // 3. Render Floor Particles (Steam, dust motes)
+    this.particles?.renderFloor?.(this.ctx, this.camera);
 
-      // 4. Render Entities (Player, NEXUS-9)
-      if (this.player) this.player.render(this.ctx, this.camera);
-      if (this.enemy && this.enemy.active) this.enemy.render(this.ctx, this.camera);
+    // 4. Render Entities (Dr. Vance, NEXUS-9)
+    if (this.player) this.player.render(this.ctx, this.camera);
+    if (this.enemy && this.enemy.active) this.enemy.render(this.ctx, this.camera);
 
-      // 5. Render Top Particles (Sparks, blood, glitch shards)
-      this.particles?.renderTop?.(this.ctx, this.camera);
+    // 5. Render Top Particles (Sparks, blood splatters, glitch shards)
+    this.particles?.renderTop?.(this.ctx, this.camera);
 
-      // Restore Camera context before Lighting & Overlays
-      this.camera.restore(this.ctx);
+    // Restore Camera context before Lighting & UI Overlays
+    this.camera.restore(this.ctx);
 
-      // 6. Dynamic 2D Lighting & Shadow Mask
-      if (this.lighting && this.gameState.state !== GAME_STATES.TITLE) {
-        this.lighting.render(this.ctx, this.player, this.enemy, this.level, this.camera);
-      }
+    // 6. Dynamic 2D Lighting & Soft Shadow Mask
+    if (this.lighting && this.gameState.state !== GAME_STATES.TITLE) {
+      this.lighting.render(this.ctx, this.player, this.enemy, this.level, this.camera);
     }
 
     // 7. Post-Processing Effects (CRT Scanlines, Chromatic Aberration, Glitch)

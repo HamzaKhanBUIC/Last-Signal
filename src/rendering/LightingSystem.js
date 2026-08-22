@@ -256,12 +256,11 @@ export class LightingSystem {
   render(ctx, player, enemy, level, camera) {
     if (!level || !camera) return;
 
-    // 1. Clear offscreen darkness mask to ambient station darkness
+    // 1. Clear offscreen darkness mask to atmospheric ambient station darkness
     this.darknessCtx.save();
     this.darknessCtx.setTransform(1, 0, 0, 1, 0, 0);
     this.darknessCtx.globalCompositeOperation = 'source-over';
-    this.darknessCtx.fillStyle = this.ambientDarkness;
-    this.darknessCtx.fillStyle = 'rgba(3, 7, 14, 0.9)';
+    this.darknessCtx.fillStyle = 'rgba(2, 6, 12, 0.55)';
     this.darknessCtx.fillRect(0, 0, this.width, this.height);
 
     // Apply camera viewport transformation to darkness canvas
@@ -381,8 +380,8 @@ export class LightingSystem {
     // PASS C: PLAYER FLASHLIGHT (Directional Cone & Ambient Halo)
     // -------------------------------------------------------------
     if (player) {
-      // 1. Ambient 360-degree Halo (Dr. Vance's suit glow / low light)
-      const haloRadius = 64;
+      // 1. Ambient 360-degree Halo (Dr. Vance's suit glow / low light) - Expanded room awareness
+      const haloRadius = 120;
       const haloPoly = this.computeVisibilityPolygon(
         player.x,
         player.y,
@@ -404,7 +403,8 @@ export class LightingSystem {
           player.x, player.y, 0,
           player.x, player.y, haloRadius
         );
-        haloGrad.addColorStop(0, 'rgba(0, 0, 0, 0.88)');
+        haloGrad.addColorStop(0, 'rgba(0, 0, 0, 0.95)');
+        haloGrad.addColorStop(0.5, 'rgba(0, 0, 0, 0.60)');
         haloGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
         this.darknessCtx.fillStyle = haloGrad;
