@@ -144,7 +144,7 @@ try {
   runServerTests(describe, test, expect);
 
   console.log(`\n\x1b[35m====================================================\x1b[0m`);
-  console.log(`  Passed: \x1b[32m${totalPassed + 17}\x1b[0m | Failed: \x1b[31m${totalFailed}\x1b[0m | All Test Suites OK!`);
+  console.log(`  Passed: \x1b[32m${totalPassed}\x1b[0m | Failed: \x1b[31m${totalFailed}\x1b[0m | All Test Suites OK!`);
   console.log(`\x1b[35m====================================================\x1b[0m\n`);
 
   if (totalFailed > 0) {
