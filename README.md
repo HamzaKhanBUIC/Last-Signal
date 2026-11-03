@@ -2,14 +2,12 @@
 
 ![The Last Signal Poster](assets/keyart.jpg)
 
-> "In the cold depths of Sector 42, silence isn't empty. It's waiting."
+> A browser survival-horror game: sneak through a 64x64 derelict station, evade an A*-pathfinding AI that hunts by sight and sound, and restore power to send a distress call. All sprites and sound are generated in code.
 
-[![Play Online](https://img.shields.io/badge/PLAY_ONLINE-LIVE_ON_GITHUB_PAGES-00ff66?style=for-the-badge&logo=github)](https://hamzakhanbuic.github.io/Last-Signal/)
-[![Tests](https://img.shields.io/badge/TESTS-149%2F149_PASSING-00f0ff?style=for-the-badge)](https://github.com/HamzaKhanBUIC/Last-Signal/actions)
+**Status:** Personal prototype, built with AI coding agents (see `AGENT_RULES.md` and `docs/AGENT_LOG.md`). 159 automated tests pass with `npm test`. The hosted build is out of date (see below).
+**Demo:** [Play in the browser](https://hamzakhanbuic.github.io/Last-Signal/) loads today, but it is an old build. The deploy workflow has failed on every push to `main` since 21 Aug 2026, so the page does not include later work such as the tutorial and the 3D mode. Run it locally for the current version.
 
-**Live Playable URL:** [https://hamzakhanbuic.github.io/Last-Signal/](https://hamzakhanbuic.github.io/Last-Signal/)
-
-**The Last Signal** is a 2D top-down sci-fi survival exploration game built with pure vanilla JavaScript (ES Modules), HTML5 Canvas 2D, and procedural Web Audio API sound synthesis.
+**The Last Signal** is a 2D top-down sci-fi survival game written in vanilla JavaScript (ES modules) with HTML5 Canvas 2D and procedural Web Audio. An optional Three.js renderer provides a 3D mode.
 
 ---
 
@@ -72,7 +70,7 @@ The game features responsive on-screen virtual controls when accessed from touch
 NEXUS-9 is a predatory artificial intelligence that roams the station corridors:
 - **Vision Cone**: 110-degree field of view with 2D raycast wall occlusion (hiding behind walls or corners breaks line of sight).
 - **Acoustic Hearing**: Detects noise vibrations emitted by player footsteps. Sprinting produces a 300px noise radius; crouching produces 0px noise.
-- **Flashlight Sensitivity**: Direct flashlight illumination on the entity triples detection speed and triggers pursuit.
+- **Flashlight Sensitivity**: If the flashlight beam hits the entity with a clear line of sight, it switches to `INVESTIGATE` and heads for the player's position.
 - **State Machine**:
   - `PATROL`: Cycles through strategic station waypoints using A* navigation.
   - `INVESTIGATE`: Inspects disturbances, footstep echoes, and terminal keystrokes.
@@ -98,7 +96,7 @@ NEXUS-9 is a predatory artificial intelligence that roams the station corridors:
 
 ## Technical Architecture
 
-- **Pure Web Standards**: Zero runtime build steps or framework dependencies.
+- **No build step**: files are served as-is. The only dependency is Three.js, used by `src/rendering/ThreeRenderer.js` for the 3D mode. The browser loads it from unpkg (version 0.160.0, via the import map in `index.html`); `package.json` pins 0.185.1 for Node.
 - **Procedural Pixel-Art Generation (`src/rendering/SpriteGenerator.js`)**: All tiles, character sprites, entity animations, items, and UI icons are generated algorithmically onto offscreen canvases at runtime.
 - **Dynamic 2D Raycast Lighting (`src/rendering/LightingSystem.js`)**: Exact visibility polygons computed by casting radial rays to wall segment endpoints, creating soft penumbras and realistic flashlight shadows.
 - **Procedural Sound Synthesis (`src/audio/AudioSynthesizer.js`, `src/audio/SoundEngine.js`)**: Sound effects, alarms, footsteps, Geiger pings, heartbeats, and ambient space station drones are synthesized in real-time via the Web Audio API. Zero audio asset downloads.
@@ -107,29 +105,36 @@ NEXUS-9 is a predatory artificial intelligence that roams the station corridors:
 
 ---
 
-## Running Locally
+## Quickstart
 
-### Option 1: Live Server / Python
+Requires Node.js 20 or newer. The game needs internet access in the browser for the Three.js import map.
+
 ```bash
-# Using Python 3 built-in HTTP server
-python -m http.server 8080
-
-# Or using Node.js http-server
-npx http-server -p 8080
-```
-Open `http://localhost:8080` in your web browser.
-
-### Option 2: Automated Tests
-```bash
-npm test
-# or
-node tests/test-runner.js
+git clone https://github.com/HamzaKhanBUIC/Last-Signal.git
+cd Last-Signal
+npm ci
+npm run serve        # node server.js, http://127.0.0.1:3000
 ```
 
----
+Open `http://127.0.0.1:3000`. `server.js` binds to loopback and serves only `index.html`, `style.css`, `src/` and `assets/`. Any static server also works, for example `python -m http.server 8080`.
 
-## Test Coverage
-The project includes an automated test suite with **13 test suites and over 120 test cases**:
+## Configuration
+
+| Variable | Default | Description |
+| :--- | :--- | :--- |
+| `PORT` | `3000` | Port for `npm run serve` (`server.js`). |
+
+Nothing else is configurable; the game needs no keys or backend. Progress is saved in the browser's `localStorage`.
+
+## Testing
+
+```bash
+npm test             # node tests/test-runner.js
+```
+
+The runner counts 159 passing tests and 0 failures. Three further assert-style suites (level, pathfinding and audio) run but are not counted. The process does not exit by itself after a successful run (an open handle keeps Node alive), so stop it with Ctrl+C once the summary prints.
+
+The suite covers:
 - `tests/math.test.js`: Geometry, vectors, raycast intersections, circle-AABB collisions.
 - `tests/eventbus-camera-input.test.js`: EventBus isolation, Camera transforms, Input actions.
 - `tests/game-state.test.js`: State machine, vitals, inventory, serialization.
@@ -143,5 +148,14 @@ The project includes an automated test suite with **13 test suites and over 120 
 
 ---
 
+## Limitations
+
+- **Hosted build is stale.** The GitHub Pages deploy workflow (`.github/workflows/deploy.yml`) runs the tests without `npm ci`, so it fails on `ERR_MODULE_NOT_FOUND: three` and `main` is not redeployed. A draft PR with a fix is open.
+- Desktop-first. Touch controls exist in `src/core/InputManager.js` but have not been tested on a device.
+- Three.js is loaded from unpkg without an integrity hash, and the browser version (0.160.0) differs from the npm one (0.185.1).
+- `npm test` does not exit on its own (see Testing).
+- Built with AI coding agents; the planning and agent logs are in `AGENT_RULES.md`, `PROJECT_DNA.md` and `docs/`.
+
 ## License
-Open-source under the MIT License.
+
+MIT. See [LICENSE](LICENSE).
