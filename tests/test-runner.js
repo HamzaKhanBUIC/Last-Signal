@@ -21,6 +21,7 @@ import { runAudioLogAndVibrationTests } from './audiolog-and-vibration.test.js';
 import { runThreeRendererTests } from './three-renderer.test.js';
 import { runCDDASurvivalAndCraftingTests } from './cdda-survival-crafting.test.js';
 import { runTutorialSystemTests } from './tutorial-system.test.js';
+import { runServerTests } from './server.test.js';
 
 let totalPassed = 0;
 let totalFailed = 0;
@@ -140,6 +141,7 @@ try {
   runThreeRendererTests(describe, test, expect);
   runCDDASurvivalAndCraftingTests(describe, test, expect);
   runTutorialSystemTests(describe, test, expect);
+  runServerTests(describe, test, expect);
 
   console.log(`\n\x1b[35m====================================================\x1b[0m`);
   console.log(`  Passed: \x1b[32m${totalPassed + 17}\x1b[0m | Failed: \x1b[31m${totalFailed}\x1b[0m | All Test Suites OK!`);

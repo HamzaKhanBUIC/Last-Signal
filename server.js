@@ -6,6 +6,32 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PORT = process.env.PORT || 3000;
+// Loopback only: the dev server must not be reachable from the local network.
+const HOST = '127.0.0.1';
+
+// Only what the game loads in the browser is served; .git, node_modules,
+// tests, docs and other repo files stay private.
+const PUBLIC_FILES = new Set(['/index.html', '/style.css']);
+const PUBLIC_DIRS = ['/src/', '/assets/'];
+
+export function resolveStaticPath(requestUrl, rootDir = __dirname) {
+  let urlPath;
+  try {
+    urlPath = decodeURIComponent(String(requestUrl || '/').split('?')[0]);
+  } catch {
+    return null;
+  }
+  if (urlPath === '/' || urlPath === '') urlPath = '/index.html';
+  if (urlPath.includes('\0') || urlPath.includes('\\')) return null;
+
+  const normalized = path.posix.normalize(urlPath);
+  if (!PUBLIC_FILES.has(normalized) && !PUBLIC_DIRS.some((dir) => normalized.startsWith(dir))) return null;
+  if (normalized.split('/').some((segment) => segment.startsWith('.'))) return null;
+
+  const root = path.resolve(rootDir);
+  const filePath = path.resolve(root, '.' + normalized);
+  return filePath.startsWith(root + path.sep) ? filePath : null;
+}
 
 const MIME_TYPES = {
   '.html': 'text/html; charset=utf-8',
@@ -23,23 +49,12 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer((req, res) => {
-  // CORS Headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-
-  if (req.method === 'OPTIONS') {
-    res.writeHead(204);
-    res.end();
+  const filePath = resolveStaticPath(req.url);
+  if (!filePath) {
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('404 Not Found');
     return;
   }
-
-  let reqPath = req.url.split('?')[0];
-  if (reqPath === '/' || reqPath === '') {
-    reqPath = '/index.html';
-  }
-
-  const safePath = path.normalize(reqPath).replace(/^(\.\.[\/\\])+/, '');
-  const filePath = path.join(__dirname, safePath);
 
   fs.readFile(filePath, (err, content) => {
     if (err) {
@@ -59,9 +74,17 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, () => {
+// Listen only when run directly (`npm run serve`), not when tests import resolveStaticPath.
+let isMain = false;
+try {
+  isMain = fs.realpathSync.native(process.argv[1]) === fs.realpathSync.native(__filename);
+} catch {
+  isMain = false;
+}
+
+if (isMain) server.listen(PORT, HOST, () => {
   console.log(`\n==================================================`);
   console.log(`  THE LAST SIGNAL — LOCAL SERVER LIVE!             `);
-  console.log(`  URL: http://localhost:${PORT}                   `);
+  console.log(`  URL: http://${HOST}:${PORT}                 `);
   console.log(`==================================================\n`);
 });
